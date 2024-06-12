@@ -1,0 +1,3 @@
+docker create mysql_db:latest
+
+docker run -d -p 3306:3306 --name mysqlcont mysql_db:latest
