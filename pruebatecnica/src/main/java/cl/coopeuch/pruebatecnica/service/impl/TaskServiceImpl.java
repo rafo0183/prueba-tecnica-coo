@@ -4,12 +4,13 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-
 import cl.coopeuch.pruebatecnica.dao.TaskDAO;
 import cl.coopeuch.pruebatecnica.dto.TaskDTO;
 import cl.coopeuch.pruebatecnica.model.Task;
@@ -17,7 +18,7 @@ import cl.coopeuch.pruebatecnica.service.TaskService;
 
 @Service
 public class TaskServiceImpl implements TaskService{
-	private static final Logger log = Logger.getLogger(TaskServiceImpl.class);
+	private static Logger logger = LogManager.getLogger();
 	
 	@Autowired
 	TaskDAO taskdao;
@@ -33,7 +34,7 @@ public class TaskServiceImpl implements TaskService{
 				throw new Exception("Task not found");
 			return taskdao.get(taskId).toDTO();
 		}catch(Exception e) {
-			log.error("Task not found");
+			logger.error("Task not found");
 			return null;
 		}
 		
@@ -47,20 +48,33 @@ public class TaskServiceImpl implements TaskService{
 		});
 		return lst;
 	}
+	
+	@Override
+	public List<TaskDTO> getAllNotDeleted() {
+		List<TaskDTO> lst = new ArrayList<>();
+		taskdao.getAll().forEach((taskModel) -> {
+			lst.add(taskModel.toDTO());
+		});
+		List<TaskDTO> filteredList = lst.stream()
+                .filter(task -> !task.getIsDeleted())
+                .collect(Collectors.toList());
+		return filteredList;
+	}
 
 	@Override
-	public boolean add(TaskDTO taskRequest) {
+	public TaskDTO add(TaskDTO taskRequest) {
 		Boolean valid = taskRequest.getValid() != null ? taskRequest.getValid() : false;
 		
 		Task task = new Task();
 		task.setName(taskRequest.getName());
 		task.setDescription(taskRequest.getDescription());
 		task.setValid(valid);
-		return taskdao.insert(task) != null;
+		task.setIsDeleted(Boolean.FALSE);
+		return taskdao.insert(task).toDTO(); 
 	}
 
 	@Override
-	public boolean replace(TaskDTO taskRequest) {
+	public TaskDTO replace(TaskDTO taskRequest) {
 		try {
 			if(taskRequest.getId()==null)
 				throw new Exception("Id not assigned");
@@ -73,13 +87,13 @@ public class TaskServiceImpl implements TaskService{
 			task.setName(taskRequest.getName());
 			task.setDescription(taskRequest.getDescription());
 			task.setValid(taskRequest.getValid());
-			taskdao.update(task);
-			return true;
+			task = taskdao.update(task);
+			return task.toDTO();
 			
 		}catch(Exception e) {
-			log.error(e);
+			logger.error(e);
 		}
-		return false;
+		return null;
 	}
 
 	@Override
@@ -100,6 +114,13 @@ public class TaskServiceImpl implements TaskService{
 		}catch(Exception e) {
 			return false;
 		}
+	}
+
+	@Override
+	public void delete(Long taskId) {
+		Task task = taskdao.get(taskId);
+		task.setIsDeleted(Boolean.TRUE);
+		taskdao.update(task);
 	}
 
 	

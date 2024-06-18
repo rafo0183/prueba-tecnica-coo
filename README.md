@@ -76,4 +76,9 @@
     </tbody>
 </table>
 <p>Existe una carpeta llamada "DB" con comandos básicos por si se quiere montar un docker con MySQL (latest)</p>
+
+<h2>Changelog</h2>
+<p><b>1.1</b> Se le hicieron cambios para que funcionara mejor con un ambiente de front</p>
+
+
 <p>Este proyecto se desarrolló en un período de 24 horas por  <a href="https://www.linkedin.com/in/rfuenteso/">Ricardo Fuentes</a></p>

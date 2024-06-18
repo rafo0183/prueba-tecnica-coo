@@ -6,13 +6,17 @@ import java.util.Map;
 import cl.coopeuch.pruebatecnica.dto.TaskDTO;
 
 public interface TaskService {
-	boolean add(TaskDTO taskRequest);
+	TaskDTO add(TaskDTO taskRequest);
 	
-	boolean replace(TaskDTO taskRequest) ;
+	TaskDTO replace(TaskDTO taskRequest) ;
 	
 	boolean update(Long taskId, Map<String, Object> taskParams);
 	
 	TaskDTO get(Long taskId);
 	
 	List<TaskDTO> getAll();
+	
+	void delete(Long taskId) ;
+
+	List<TaskDTO> getAllNotDeleted();
 }

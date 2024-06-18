@@ -31,6 +31,8 @@ public class Task {
 	private Date createdAt;
 	@Column(name = "valid")
 	private Boolean valid;
+	@Column(name = "deleted")
+	private Boolean isDeleted;
 	public Long getId() {
 		return id;
 	}
@@ -61,10 +63,16 @@ public class Task {
 	public void setValid(Boolean valid) {
 		this.valid = valid;
 	}
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	@Override
 	public String toString() {
 		return "Task [id=" + id + ", name=" + name + ", description=" + description + ", createdAt=" + createdAt
-				+ ", valid=" + valid + "]";
+				+ ", valid=" + valid + ", isDeleted=" + isDeleted + "]";
 	}
 	public TaskDTO toDTO() {
 		TaskDTO dto = new TaskDTO();
@@ -72,6 +80,7 @@ public class Task {
 		dto.setName(getName());
 		dto.setDescription(getDescription());
 		dto.setValid(getValid());
+		dto.setIsDeleted(getIsDeleted());
 		return dto;
 	}
 	

@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,9 +28,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/v1/task")
 public class TaskController {
-	private static final Logger log = Logger.getLogger(TaskController.class);
+	private static Logger logger = LogManager.getLogger();
 	
-	private static final String MSG_TASK_ADDED = "Task added";
+	
 	private static final String MSG_TASK_UPDATED = "Task updated";
 	private static final String WRONG_DATA = "Wrong data";
 	
@@ -39,43 +41,59 @@ public class TaskController {
 	@GetMapping("/get/{taskId}")
 	@ResponseBody
 	public Optional<TaskDTO> get(@PathVariable("taskId") Long taskId) {
+		logger.info(String.format("Call of get(), taskId = %s", taskId));
 		return Optional.ofNullable(taskService.get(taskId));
 	} 
 	
 	@GetMapping("/getAll")
 	@ResponseBody
 	public List<TaskDTO> getAll() {
-		return taskService.getAll();
+		logger.info("Call of getAll()");
+		return taskService.getAllNotDeleted();
 	} 
 	
 	@PostMapping("/add")
-	public ResponseEntity<?> add(@Valid @RequestBody TaskDTO task) {
-		log.info("adding task " + task.toString());
-		if(taskService.add(task)) {
-			return ResponseEntity.ok(new ResponseHttp(ResponseHttp.STATUS_DONE, MSG_TASK_ADDED));
+	@ResponseBody
+	public ResponseEntity<?> add(@Valid @RequestBody TaskDTO taskReq) {
+		logger.info("Call add() , task: " + taskReq.toString());
+		TaskDTO taskRes = taskService.add(taskReq);
+		if(taskRes != null) {
+			 return new ResponseEntity<>(taskRes, HttpStatus.OK);
 		}else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseHttp(ResponseHttp.STATUS_ERROR, WRONG_DATA));
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		
 	}
 	
 	@PutMapping("/replace")
+	@ResponseBody
 	public ResponseEntity<?> replace(@Valid @RequestBody TaskDTO task) {
-		log.info("replace task " + task.toString());
-		if(taskService.replace(task)) {
+		logger.info("Call of replace()");
+		TaskDTO taskRes = taskService.replace(task);
+		if(taskRes != null) {
+			return new ResponseEntity<>(taskRes, HttpStatus.OK);
+		}else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	@PatchMapping("/update/{taskId}")
+	public ResponseEntity<?> update(@RequestBody Map<String, Object> taskParams, @PathVariable("taskId") String taskId) {
+		logger.info(String.format("Call of update(), taskParams = %s , taskId = %s", taskParams, taskId));
+		if(taskService.update(Long.parseLong(taskId), taskParams)) {
 			return ResponseEntity.ok(new ResponseHttp(ResponseHttp.STATUS_DONE, MSG_TASK_UPDATED));
 		}else {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseHttp(ResponseHttp.STATUS_ERROR, WRONG_DATA));
 		}
 	}
 	
-	@PatchMapping("/update/{taskId}")
-	public ResponseEntity<?> update(@RequestBody Map<String, Object> taskParams, @PathVariable("taskId") String taskId) {
-		log.info("update task " + taskParams.toString());
-		if(taskService.update(Long.parseLong(taskId), taskParams)) {
-			return ResponseEntity.ok(new ResponseHttp(ResponseHttp.STATUS_DONE, MSG_TASK_UPDATED));
-		}else {
+	@DeleteMapping("/delete/{taskId}")
+	public ResponseEntity<?> delete(@PathVariable("taskId") String taskId) {
+		logger.info(String.format("Call of delete() taskId = %s", taskId));
+		if(taskId==null) 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseHttp(ResponseHttp.STATUS_ERROR, WRONG_DATA));
-		}
+		
+		taskService.delete(Long.parseLong(taskId));
+		return ResponseEntity.ok(new ResponseHttp(ResponseHttp.STATUS_DONE, MSG_TASK_UPDATED));
 	}
 }

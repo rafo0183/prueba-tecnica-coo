@@ -22,15 +22,14 @@ public class TaskDAOImpl implements TaskDAO{
 	}
 
 	@Override
-	public void update(Task t) {
-		taskRepository.save(t);
+	public Task update(Task t) {
+		return taskRepository.save(t);
 		
 	}
 
 	@Override
 	public void delete(Task t) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

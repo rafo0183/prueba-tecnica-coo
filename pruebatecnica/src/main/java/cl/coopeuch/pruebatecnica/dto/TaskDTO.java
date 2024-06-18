@@ -9,6 +9,7 @@ public class TaskDTO {
 	@NotBlank
 	private String description;
 	private Boolean valid;
+	private Boolean isDeleted;
 	
 	public Long getId() {
 		return id;
@@ -34,8 +35,15 @@ public class TaskDTO {
 	public void setValid(Boolean valid) {
 		this.valid = valid;
 	}
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	@Override
 	public String toString() {
-		return "TaskDTO [id=" + id + ", name=" + name + ", description=" + description + ", valid=" + valid + "]";
+		return "TaskDTO [id=" + id + ", name=" + name + ", description=" + description + ", valid=" + valid
+				+ ", isDeleted=" + isDeleted + "]";
 	}
 }
